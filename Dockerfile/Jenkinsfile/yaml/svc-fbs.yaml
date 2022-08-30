@@ -1,0 +1,12 @@
+kind: Service       #提供服務
+apiVersion: v1
+metadata:
+  name: svc-fbs
+spec:
+  externalIPs:
+  - 192.168.61.4    #提供服務的位址，設定為m1主機的IP
+  selector:         #選擇標籤的名稱
+    name: pod-fbs   #選擇哪個pod來做服務
+  ports:
+  - port: 8080
+    targetPort: 4000
