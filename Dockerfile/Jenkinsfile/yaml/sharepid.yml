@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: sharepid
+spec:
+  shareProcessNamespace: true       #三台container共用同一個UTS、電腦名稱、process
+  hostname: xyz 
+  containers:
+  - name: derby                     #java程式
+    image: quay.io/cloudwalker/alpine.derby
+    imagePullPolicy: Always         #無論有無image，都會上網下載
+  - name: shell                     #貝殼程式
+    image: quay.io/cloudwalker/alpine
+    imagePullPolicy: IfNotPresent
+    tty: true  
