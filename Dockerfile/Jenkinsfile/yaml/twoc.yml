@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: twoc
+  annotations:           #這行指備註，但仍然有動作，下面指之後以貝殼程式執行
+    kubectl.kubernetes.io/default-container: "shell"
+spec:
+  shareProcessNamespace: false   #這行讓pause這台container看不到
+  containers:
+  - name: derby
+    image: quay.io/cloudwalker/alpine.derby
+    imagePullPolicy: Never
+  - name: shell
+    image: quay.io/cloudwalker/busybox
+    command:
+      - sleep
+      - "60"
+  restartPolicy: Never
