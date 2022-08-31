@@ -1,0 +1,36 @@
+pipeline {
+    agent { 
+        kubernetes {
+            inheritFrom 'mycicd'
+            defaultContainer 'k1'
+            yaml """
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+  - name: jnlp
+    image: quay.io/flysangel/inbound-agent:4.13-2-jdk11
+  - name: k1
+    securityContext:
+      privileged: true
+    image: quay.io/flysangel/kubectl:1.24.3
+    command: ["sleep"]
+    args: ["infinity"]
+"""
+        }
+    }
+    options {
+        skipDefaultCheckout true
+    }
+    environment {
+        KUBECONFIG = credentials('kubeconfig-cred')
+    }
+    stages {
+        stage ('get node') {
+            steps {
+                sh 'mkdir -p ~/.kube && cp ${KUBECONFIG} ~/.kube/config'
+                sh 'kubectl get nodes -o wide'
+            }
+        }
+    }
+}
