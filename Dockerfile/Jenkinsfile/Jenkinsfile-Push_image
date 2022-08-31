@@ -1,0 +1,43 @@
+pipeline {
+    agent { 
+        kubernetes {
+            inheritFrom 'mycicd'
+            defaultContainer 'p1'
+            yaml """
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+  - name: jnlp
+    image: quay.io/flysangel/inbound-agent:4.13-2-jdk11
+  - name: p1
+    securityContext:
+      privileged: true
+    image: quay.io/podman/stable:v3.4.7
+    command: ["sleep"]
+    args: ["infinity"]
+"""
+        }
+    }
+    environment {
+        QUAY_ADMIN = credentials('quay-admin-id')
+        IMAGE_TAG = 'mj509.flymks.com:9090/mj15r/alpine.httpd:1.0.0'
+    }
+    stages {
+        stage ('podman login') {
+            steps {
+                sh 'podman login --tls-verify=false -u=${QUAY_ADMIN_USR} -p=${QUAY_ADMIN_PSW} mj509.flymks.com:9090'
+            }
+        }
+        stage ('build image') {
+            steps {
+                sh 'podman build --tls-verify=false -t "${IMAGE_TAG}" .'
+                sh 'podman images'
+            }
+        }
+        stage ('push image') {
+            steps {
+                sh 'podman push --tls-verify=false "${IMAGE_TAG}"'
+            }
+        }
+    }
