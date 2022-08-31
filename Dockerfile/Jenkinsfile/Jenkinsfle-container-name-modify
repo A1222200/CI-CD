@@ -1,0 +1,48 @@
+pipeline {
+    agent { 
+        kubernetes {
+            inheritFrom 'mycicd'
+            yaml """
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+  - name: jnlp
+    image: quay.io/flysangel/inbound-agent:4.13-2-jdk11
+    env:
+    - name: CONTAINER_NAME
+      value: jnlp
+  - name: p1
+    securityContext:
+      privileged: true
+    image: quay.io/podman/stable:v3.4.7
+    command: ["sleep"]
+    args: ["infinity"]
+"""
+        }
+    }
+    options {
+        skipDefaultCheckout true
+    }
+    stages {
+        stage ('default container') {
+            steps {
+                sh 'echo $CONTAINER_NAME'
+            }
+        }
+        stage ('jnlp container') {
+            steps {
+                container('jnlp') {
+                    sh 'echo $CONTAINER_NAME'
+                }
+            }
+        }
+        stage ('p1 container') {
+            steps {
+                container('p1') {
+                    sh 'echo $CONTAINER_NAME'
+                }
+            }
+        }
+    }
+}
