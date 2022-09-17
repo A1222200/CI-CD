@@ -1,0 +1,13 @@
+# pvc-nginx.yaml
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: html-storage
+spec:
+  storageClassName: local-path
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 3Mi
