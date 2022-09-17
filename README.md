@@ -1,5 +1,5 @@
 # 雲端與 SRE 網站可靠性工程師班所學
-/ Git
+Git
 / Jenkins
 / Kubenetes
 / Docker
