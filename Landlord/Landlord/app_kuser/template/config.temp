@@ -1,0 +1,14 @@
+contexts:
+  - context:
+      cluster: kubernetes
+      namespace: ${KUSER}
+      user: ${KUSER}
+    name: ${KUSER}-context
+current-context: ${KUSER}-context
+kind: Config
+preferences: {}
+users:
+  - name: ${KUSER}
+    user:
+      client-certificate-data: ${K8S_CRT}
+      client-key-data: ${K8S_KEY}
