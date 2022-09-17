@@ -1,0 +1,21 @@
+# pv-rwo-7m.yaml
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-rwo-7m
+spec:
+  capacity:
+    storage: 7Mi
+  accessModes:
+    - ReadWriteOnce
+  local:
+    path: "/opt/pv/7m"
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - w1  # 執行主機
