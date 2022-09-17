@@ -1,0 +1,17 @@
+# pod-nginx-1.yaml
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-1
+spec:
+  containers:
+    - name: nginx-1
+      image: quay.io/flysangel/nginx
+      volumeMounts:
+        - name: html-storage
+          mountPath: /usr/share/nginx/html
+  volumes:
+    - name: html-storage
+      persistentVolumeClaim:
+        claimName: pvc-rwo-3m
