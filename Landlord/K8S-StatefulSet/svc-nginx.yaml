@@ -1,0 +1,10 @@
+# svc-nginx.yaml
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx
+spec:
+  clusterIP: None
+  selector:
+    app: nginx
