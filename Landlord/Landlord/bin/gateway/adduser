@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# add profile
+echo -e "reset\nsshpass -p \$(whoami) ssh \$(whoami)@\$(whoami).${USERTAG}.${NS}\nexit 0" | tee /etc/profile
+
+# create user
+for num in $(seq 0 99); do
+  user="${USERTAG}-${num}"
+  adduser -s /bin/bash -D "${user}"
+  echo "${user}:${user}" | chpasswd
+done
