@@ -1,0 +1,5 @@
+From quay.io/flysangel/image:alpine.sshd
+
+COPY bin/gateway/adduser /bin/
+
+CMD ["/bin/bash", "-c", "/bin/adduser; /usr/sbin/sshd -D"]
