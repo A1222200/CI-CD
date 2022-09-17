@@ -1,0 +1,3 @@
+FROM quay.io/flysangel/mariadb
+
+COPY conf/mariadb/initdb/initdb.sql /docker-entrypoint-initdb.d
