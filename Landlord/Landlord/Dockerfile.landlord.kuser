@@ -1,0 +1,33 @@
+FROM quay.io/flysangel/golang AS build-env
+
+ADD ./app_kuser /src
+
+RUN \
+    cd /src && \
+    CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o main
+
+
+FROM quay.io/flysangel/image:alpine.base AS main
+
+RUN \
+    apk update && \
+    apk add --no-cache openssl
+
+RUN \
+    curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && \
+    install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl && \
+    rm -r kubectl
+
+RUN \
+    mkdir -p /app_kuser/kuser
+
+COPY --from=build-env /src/main /app_kuser/main
+COPY app_kuser/template /app_kuser/template
+COPY app_kuser/ckuser /app_kuser/ckuser
+COPY app_kuser/config /app_kuser/config
+COPY app_kuser/create /app_kuser/create
+COPY app_kuser/delete /app_kuser/delete
+
+WORKDIR /app_kuser
+
+ENTRYPOINT ["./main"]
