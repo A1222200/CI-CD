@@ -1,0 +1,23 @@
+#!/bin/bash
+
+#set -x # debug mode
+set -a # var export
+set -o errexit -o nounset -o pipefail
+
+[ "${#}" != "1" ] && echo 'delete [user]' && exit 1
+
+kubectl config get-contexts | grep 'kubernetes-admin' &>/dev/null
+[ "${?}" == "1" ] && echo 'Config not kubernetes admin' && exit 1
+
+KUSER=${1}
+if [ -d ./kuser/"${KUSER}" ]; then
+  # Delete user k8s resource
+  kubectl delete ns "${KUSER}" --force --grace-period=0 &>/dev/null
+  kubectl delete csr "${KUSER}"-csr &>/dev/null
+  rm -r ./kuser/"${KUSER}" &>/dev/null
+  echo "K8S user \"${KUSER}\" deleted"
+else
+  echo "K8S user \"${KUSER}\" not existed"
+fi
+
+set +a # var unexport
