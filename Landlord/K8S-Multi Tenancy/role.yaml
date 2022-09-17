@@ -1,0 +1,11 @@
+# role.yaml
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: user001-role
+  namespace: user001
+rules:
+- apiGroups: [""] # "" indicates the core API group
+  resources: ["pods","services"]
+  verbs: ["get","watch","list"]
