@@ -1,0 +1,22 @@
+#!/bin/bash
+
+nc -k -l -p 5566 |
+  while read -r line; do
+    if echo "${line}" | grep 'HISTORY'; then
+      HOSTNAME=$(echo "${line}" | grep 'HISTORY' | awk -F'|' '{print $2}')
+      USERNAME=$(echo "${line}" | grep 'HISTORY' | awk -F'|' '{print $3}')
+      TIME=$(echo "${line}" | grep 'HISTORY' | awk -F'|' '{print $5}')
+      COMMAND=$(echo "${line}" | grep 'HISTORY' | awk -F'|' '{print $6}')
+      mysql -h "${DB_SERVER}.${NS}" -u "${DB_ROOT}" -p"${DB_ROOT_PW}" "${DB_NAME}" \
+        -e "INSERT INTO history VALUES ('${HOSTNAME}','${USERNAME}','${TIME}','${COMMAND}')"
+    fi
+
+    if echo "${line}" | grep 'INOTIFY'; then
+      HOSTNAME=$(echo "${line}" | grep 'INOTIFY' | awk -F'|' '{print $2}')
+      TIME=$(echo "${line}" | grep 'INOTIFY' | awk -F'|' '{print $3}')
+      EVENT=$(echo "${line}" | grep 'INOTIFY' | awk -F'|' '{print $4}')
+      INPATH=$(echo "${line}" | grep 'INOTIFY' | awk -F'|' '{print $5}')
+      mysql -h "${DB_SERVER}.${NS}" -u "${DB_ROOT}" -p"${DB_ROOT_PW}" "${DB_NAME}" \
+        -e "INSERT INTO inotify VALUES ('${HOSTNAME}','${TIME}','${EVENT}','${INPATH}')"
+    fi
+  done
