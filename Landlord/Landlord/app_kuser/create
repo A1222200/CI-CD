@@ -1,0 +1,45 @@
+#!/bin/bash
+
+#set -x # debug mode
+set -a # var export
+set -o errexit -o nounset -o pipefail
+
+[ "${#}" != "1" ] && echo 'create [user]' && exit 1
+
+kubectl config get-contexts | grep 'kubernetes-admin' &>/dev/null
+[ "${?}" == "1" ] && echo 'Config not kubernetes admin' && exit 1
+
+KUSER=${1}
+if [ ! -d ./kuser/"${KUSER}" ]; then
+  # Prepare user folder
+  mkdir -p ./kuser/"${KUSER}"
+
+  # Create private key
+  openssl genrsa -out ./kuser/"${KUSER}"/private.key 2048 &>/dev/null
+
+  # Create Certificate Signing Request
+  openssl req -new -key ./kuser/"${KUSER}"/private.key -out ./kuser/"${KUSER}"/CSR.csr -subj "/CN=${KUSER}/O=${KUSER}"
+  BASE64_CSR=$(base64 <./kuser/"${KUSER}"/CSR.csr | tr -d '\n')
+  envsubst <./template/csr.temp | kubectl apply -f - &>/dev/null
+
+  # Approve certificate signing request
+  kubectl certificate approve "${KUSER}"-csr &>/dev/null
+  kubectl wait csr/"${KUSER}"-csr --for=condition=Approved --timeout=0 &>/dev/null
+  kubectl get csr "${KUSER}"-csr -o jsonpath='{.status.certificate}' | base64 -d >./kuser/"${KUSER}"/k8s-signed.crt
+
+  # Create namespace
+  kubectl create namespace "${KUSER}" &>/dev/null
+
+  # Create Role and RoleBinding
+  envsubst <./template/role.temp | kubectl apply -f - &>/dev/null
+  envsubst <./template/rolebind.temp | kubectl apply -f - &>/dev/null
+
+  # Check crt and rolebindings
+  openssl x509 -noout -subject -in ./kuser/"${KUSER}"/k8s-signed.crt | grep "O = ${KUSER}, CN = ${KUSER}" &>/dev/null &&
+    kubectl describe rolebindings "${KUSER}"-rbind -n "${KUSER}" | grep "${KUSER}" &>/dev/null &&
+    echo "K8S user \"${KUSER}\" created"
+else
+  echo "K8S user \"${KUSER}\" existed"
+fi
+
+set +a # var unexport
