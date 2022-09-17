@@ -1,0 +1,21 @@
+# pv-rwo-5m.yaml
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-rwo-5m
+spec:
+  capacity:
+    storage: 5Mi
+  accessModes:
+    - ReadWriteOnce
+  local:
+    path: "/opt/pv/5m"
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - w1   # 執行主機名稱
