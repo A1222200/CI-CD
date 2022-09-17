@@ -1,0 +1,23 @@
+# pod-emptydir.yaml
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: emptydir
+spec:
+  containers:
+  - name: c1
+    image: quay.io/flysangel/busybox
+    command: ["/bin/sh", "-c", "while true; do echo $(date) > /cache/time; sleep 1; done"]
+    volumeMounts:
+    - name: cache
+      mountPath: /cache
+  - name: c2
+    image: quay.io/flysangel/busybox
+    command: ["/bin/sh", "-c", "while true; do cat /cache/time; sleep 5; done"]
+    volumeMounts:
+    - name: cache
+      mountPath: /cache
+  volumes:
+  - name: cache
+    emptyDir: {}
