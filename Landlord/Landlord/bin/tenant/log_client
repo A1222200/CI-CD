@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# create user
+adduser -s /bin/bash -h /home/"$(hostname)" -D "$(hostname)"
+echo "$(hostname):$(hostname)" | chpasswd
+if [ -d /home/wk ]; then
+  ln -s /home/wk /home/"$(hostname)"/wk
+else
+  mkdir /home/"$(hostname)"/wk
+fi
+chown -R "$(hostname)":"$(hostname)" /home/"$(hostname)"
+
+# create kube config
+mkdir /home/"$(hostname)"/.kube
+while true; do
+  curl -s "http://${KUSER_SERVER}.${NS}/ping" | grep 'pong' &&
+    curl -s "http://${KUSER_SERVER}.${NS}/create" | grep "created\|existed" &&
+    curl -s "http://${KUSER_SERVER}.${NS}/config" >/home/"$(hostname)"/.kube/config &&
+    break
+  sleep 1
+done
+
+# history collect
+sed -i '/HISTCONTROL\|HISTTIMEFORMAT\|PROMPT_COMMAND/d' /etc/profile
+echo "
+readonly HISTCONTROL=''
+readonly HISTTIMEFORMAT='|%Y-%m-%d %H:%M:%S|'
+readonly PROMPT_COMMAND='echo HISTORY:\|\$(hostname)\|\$(whoami)\|\$(history 1) | timeout 0.1 nc ${LOG_SERVER}.${NS} 5566; history -a; history -n'
+cd ~/wk
+" | tee -a /etc/profile
+
+# filesystem collect
+inotifywait -rmq /home \
+  --format '|%T|%e|%w%f' \
+  --timefmt '%Y-%m-%d %H:%M:%S' \
+  --event 'modify,move,create,delete' | while read -r line; do
+  echo "${line}" | grep "${EXCLUDE}" &>/dev/null ||
+    echo "INOTIFY:|$(hostname)${line}" | timeout 0.1 nc "${LOG_SERVER}.${NS}" 5566
+done
