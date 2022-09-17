@@ -1,0 +1,18 @@
+# pod-hostpath.yaml
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: hostpath
+spec:
+  containers:
+  - name: c1
+    image: quay.io/flysangel/busybox
+    command: ["/bin/sh", "-c", "while true; do echo $(date) > /cache/time; sleep 1; done"]
+    volumeMounts:
+    - name: cache
+      mountPath: /cache
+  volumes:
+    - name: cache
+      hostPath:
+        path: /opt/pv/cache
