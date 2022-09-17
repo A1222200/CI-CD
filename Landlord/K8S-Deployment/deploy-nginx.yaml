@@ -1,0 +1,26 @@
+# deploy-nginx.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+        - name: nginx
+          image: quay.io/nlnlqaq/nginx:1.22.0
+          volumeMounts:
+            - name: html-storage
+              mountPath: /usr/share/nginx/html
+      volumes:
+        - name: html-storage
+          persistentVolumeClaim:
+            claimName: pvc-rwo-3m
