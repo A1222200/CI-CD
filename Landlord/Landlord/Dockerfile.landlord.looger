@@ -1,0 +1,6 @@
+FROM quay.io/flysangel/image:alpine.base
+RUN sudo apk add mysql  mysql-client 
+
+COPY bin/logger/log_server /bin
+
+CMD ["/bin/bash", "-c", "/bin/log_server"]
